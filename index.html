@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Scenario Estimator | Partners Mortgage</title>
+<style>
+  /* ============================================================
+     Brand tokens — Partners Mortgage
+     ============================================================ */
+  :root {
+    --teal: #00818D;
+    --teal-dark: #006570;
+    --teal-light: #E6F2F3;
+    --warm-gray: #8A7E78;
+    --warm-gray-light: #F5F2F0;
+    --gold: #FFAC27;
+    --gold-soft: #FFF4DC;
+    --ink: #1F2A2D;
+    --ink-muted: #5A6669;
+    --paper: #FBFAF8;
+    --line: #E5E1DC;
+    --line-soft: #F0EDE8;
+    --white: #FFFFFF;
+    --green: #4A7C59;
+    --green-soft: #E8F0EA;
+    --red: #B0413E;
+    --red-soft: #F8E8E7;
+    --amber: #C97B1F;
+    --amber-soft: #FBEFD8;
+
+    --shadow-sm: 0 1px 2px rgba(31,42,45,.06);
+    --shadow-md: 0 2px 8px rgba(31,42,45,.08), 0 1px 2px rgba(31,42,45,.04);
+    --shadow-lg: 0 8px 24px rgba(31,42,45,.10), 0 2px 6px rgba(31,42,45,.05);
+
+    --radius-sm: 4px;
+    --radius: 6px;
+    --radius-lg: 10px;
+  }
+
+  /* Fallback Gotham/Lora stack (web safe) */
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Montserrat', 'Gotham', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .lora { font-family: 'Lora', Georgia, serif; }
+
+  /* ============================================================
+     Top bar
+     ============================================================ */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand img { height: 42px; width: auto; }
+  .brand-text { display: flex; flex-direction: column; }
+  .brand-text .product {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--ink);
+  }
+  .brand-text .tagline {
+    font-family: 'Lora', Georgia, serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--warm-gray);
+  }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ============================================================
+     Layout
+     ============================================================ */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 28px 60px;
+  }
+
+  .page-header {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .page-header h1 .accent {
+    font-family: 'Lora', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--teal);
+  }
+  .page-header .sub {
+    color: var(--ink-muted);
+    font-size: 13px;
+    margin-top: 4px;
+    max-width: 640px;
+  }
+
+  /* ============================================================
+     Cards
+     ============================================================ */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .card-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-header h2::before {
+    content: '';
+    width: 3px;
+    height: 16px;
+    background: var(--teal);
+    border-radius: 2px;
+  }
+  .card-header .meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .card-body { padding: 22px; }
+  .card-body.tight { padding: 0; }
+
+  /* ============================================================
+     Upload zone
+     ============================================================ */
+  .upload-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) { .upload-row { grid-template-columns: 1fr; } }
+
+  .dropzone {
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 32px 20px;
+    text-align: center;
+    background: var(--warm-gray-light);
+    transition: all .15s ease;
+    cursor: pointer;
+  }
+  .dropzone:hover, .dropzone.drag {
+    border-color: var(--teal);
+    background: var(--teal-light);
+  }
+  .dropzone-icon {
+    width: 44px; height: 44px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--teal);
+    box-shadow: var(--shadow-sm);
+  }
+  .dropzone p { font-size: 13px; color: var(--ink-muted); }
+  .dropzone .strong { font-weight: 600; color: var(--ink); font-size: 14px; }
+
+  input[type="file"] { display: none; }
+
+  .upload-side {
+    background: var(--warm-gray-light);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+  .upload-side strong { color: var(--ink); display: block; margin-bottom: 6px; font-size: 13px; }
+
+  /* ============================================================
+     Buttons
+     ============================================================ */
+  .btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: .01em;
+  }
+  .btn-primary {
+    background: var(--teal);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: var(--teal-dark); }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--ink);
+  }
+  .btn-gold:hover { background: #F09A14; }
+  .btn-outline {
+    background: var(--white);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-muted);
+  }
+  .btn-ghost:hover { color: var(--teal); background: var(--teal-light); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ============================================================
+     Borrower summary
+     ============================================================ */
+  .borrower-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0;
+  }
+  .borrower-cell {
+    padding: 18px 20px;
+    border-right: 1px solid var(--line-soft);
+  }
+  .borrower-cell:last-child { border-right: none; }
+  .borrower-cell .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--warm-gray);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .borrower-cell .value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .borrower-cell .value.score {
+    font-family: 'Lora', Georgia, serif;
+    font-style: normal;
+    font-size: 24px;
+  }
+  .borrower-cell .subvalue { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+
+  .score-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .score-pill.excellent { background: var(--green-soft); color: var(--green); }
+  .score-pill.good { background: var(--teal-light); color: var(--teal); }
+  .score-pill.fair { background: var(--gold-soft); color: var(--amber); }
+  .score-pill.poor { background: var(--red-soft); color: var(--red); }
+
+  /* ============================================================
+     Executive summary
+     ============================================================ */
+  .exec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 900px) { .exec-grid { grid-template-columns: 1fr; } }
+
+  .exec-tile {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    background: var(--paper);
+  }
+  .exec-tile h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .exec-tile ul { list-style: none; }
+  .exec-tile li {
+    font-size: 13px;
+    color: var(--ink);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .exec-tile li:last-child { border-bottom: none; }
+  .exec-tile li .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .exec-tile.action li .dot { background: var(--gold); }
+  .exec-tile.qual li .dot { background: var(--green); }
+
+  /* ============================================================
+     Debt table
+     ============================================================ */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--warm-gray-light);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 14px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: var(--warm-gray-light); }
+  tbody tr.selected { background: var(--teal-light); }
+  tbody tr.selected:hover { background: var(--teal-light); }
+
+  .creditor-name { font-weight: 600; color: var(--ink); }
+  .creditor-sub { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; }
+
+  .util-bar {
+    width: 80px;
+    height: 6px;
+    background: var(--line-soft);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .util-bar .fill { height: 100%; transition: width .3s ease; }
+  .util-bar .fill.low { background: var(--green); }
+  .util-bar .fill.med { background: var(--gold); }
+  .util-bar .fill.high { background: var(--amber); }
+  .util-bar .fill.crit { background: var(--red); }
+
+  .util-label { font-size: 12px; font-weight: 600; }
+  .util-label.low { color: var(--green); }
+  .util-label.med { color: var(--amber); }
+  .util-label.high { color: var(--amber); }
+  .util-label.crit { color: var(--red); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.revolving { background: var(--teal-light); color: var(--teal); }
+  .badge.installment { background: var(--warm-gray-light); color: var(--warm-gray); }
+  .badge.mortgage { background: var(--gold-soft); color: var(--amber); }
+  .badge.auto { background: var(--warm-gray-light); color: var(--warm-gray); }
+  .badge.student { background: var(--warm-gray-light); color: var(--warm-gray); }
+  .badge.collection { background: var(--red-soft); color: var(--red); }
+  .badge.chargeoff { background: var(--red-soft); color: var(--red); }
+
+  .status-good { color: var(--green); }
+  .status-warn { color: var(--amber); }
+  .status-bad { color: var(--red); }
+
+  .checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--teal);
+    cursor: pointer;
+  }
+
+  .paydown-input {
+    width: 90px;
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 12px;
+    text-align: right;
+  }
+  .paydown-input:focus { outline: none; border-color: var(--teal); }
+
+  .impact-cell {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+  .impact-cell .impact-tag {
+    font-weight: 600;
+    color: var(--teal);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .impact-cell .impact-tag.high { color: var(--green); }
+  .impact-cell .impact-tag.med { color: var(--amber); }
+  .impact-cell .impact-tag.low { color: var(--warm-gray); }
+
+  /* ============================================================
+     Scenario builder
+     ============================================================ */
+  .scenario-bar {
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+    color: var(--white);
+    padding: 20px 22px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .scenario-bar h2 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    margin-bottom: 4px;
+  }
+  .scenario-bar p {
+    font-size: 12.5px;
+    opacity: .85;
+    max-width: 520px;
+  }
+  .scenario-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .scenario-buttons .btn {
+    background: rgba(255,255,255,.12);
+    color: var(--white);
+    border-color: rgba(255,255,255,.2);
+    backdrop-filter: blur(8px);
+  }
+  .scenario-buttons .btn:hover {
+    background: rgba(255,255,255,.22);
+    border-color: rgba(255,255,255,.35);
+  }
+  .scenario-buttons .btn.primary-gold {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+  .scenario-buttons .btn.primary-gold:hover {
+    background: #F09A14;
+    border-color: #F09A14;
+  }
+
+  /* ============================================================
+     Scenario results
+     ============================================================ */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 1100px) { .results-grid { grid-template-columns: 1fr; } }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .metric {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .metric .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .metric .value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .metric .delta {
+    font-size: 11.5px;
+    margin-top: 4px;
+    color: var(--ink-muted);
+  }
+  .metric .delta.positive { color: var(--green); }
+  .metric .delta.negative { color: var(--red); }
+
+  /* Utilization comparison */
+  .util-compare {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .util-compare h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .util-rows { display: flex; flex-direction: column; gap: 10px; }
+  .util-row { display: grid; grid-template-columns: 80px 1fr 60px; gap: 12px; align-items: center; }
+  .util-row .rl { font-size: 12px; color: var(--ink-muted); }
+  .util-row .rb {
+    height: 14px;
+    background: var(--line-soft);
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+  .util-row .rb .fill {
+    height: 100%;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .util-row .rb .fill.before { background: var(--red); }
+  .util-row .rb .fill.after { background: var(--green); }
+  .util-row .rv { font-size: 13px; font-weight: 600; text-align: right; }
+
+  /* Score impact */
+  .score-impact {
+    background: linear-gradient(135deg, var(--gold-soft) 0%, var(--warm-gray-light) 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    text-align: center;
+  }
+  .score-impact .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .score-impact .range {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--teal-dark);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .score-impact .range .plus { color: var(--amber); }
+  .score-impact .unit { font-size: 13px; color: var(--ink-muted); margin-bottom: 14px; }
+  .score-impact .confidence {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .score-impact .confidence.high { background: var(--green-soft); color: var(--green); }
+  .score-impact .confidence.med { background: var(--gold-soft); color: var(--amber); }
+  .score-impact .confidence.low { background: var(--warm-gray-light); color: var(--warm-gray); }
+  .score-impact .timing {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+
+  /* Threshold crossings list */
+  .crossings {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+  }
+  .crossings h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .crossings ul { list-style: none; }
+  .crossings li {
+    font-size: 12.5px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .crossings li:last-child { border-bottom: none; }
+  .crossings li .who { color: var(--ink); }
+  .crossings li .what { color: var(--green); font-weight: 600; font-size: 12px; }
+  .crossings .empty { color: var(--ink-muted); font-size: 12.5px; font-style: italic; padding: 4px 0; }
+
+  /* Borrower explanation */
+  .borrower-note {
+    background: var(--teal-light);
+    border-left: 3px solid var(--teal);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-top: 16px;
+  }
+  .borrower-note h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--teal-dark);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .borrower-note p {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  /* ============================================================
+     Maintenance plan
+     ============================================================ */
+  .plan-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .plan-grid { grid-template-columns: 1fr; } }
+
+  .plan-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .plan-item .num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Lora', Georgia, serif;
+  }
+  .plan-item h5 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .plan-item p {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+
+  .resources {
+    margin-top: 18px;
+    padding: 16px 20px;
+    background: var(--warm-gray-light);
+    border-radius: var(--radius);
+  }
+  .resources h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .resources ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .resources li { font-size: 12.5px; }
+  .resources a { color: var(--teal); text-decoration: none; border-bottom: 1px dotted var(--teal); }
+  .resources a:hover { color: var(--teal-dark); }
+
+  /* ============================================================
+     Disclaimer
+     ============================================================ */
+  .disclaimer {
+    background: var(--warm-gray-light);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+  .disclaimer strong { color: var(--ink); }
+
+  /* ============================================================
+     Footer
+     ============================================================ */
+  footer {
+    text-align: center;
+    padding: 30px 20px 20px;
+    color: var(--warm-gray);
+    font-size: 12px;
+    border-top: 1px solid var(--line-soft);
+    margin-top: 30px;
+  }
+  footer .tagline {
+    font-family: 'Lora', Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--teal);
+    margin-bottom: 4px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-muted);
+    font-size: 13px;
+  }
+
+  /* Settings drawer */
+  .settings-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .settings-field { display: flex; flex-direction: column; gap: 4px; }
+  .settings-field label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--warm-gray);
+    font-weight: 600;
+  }
+  .settings-field input {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .settings-field input:focus { outline: none; border-color: var(--teal); }
+
+  /* Setup modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(31,42,45,.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 520px;
+    width: 100%;
+    padding: 28px 28px 22px;
+  }
+  .modal h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .modal h3::before {
+    content: '';
+    width: 3px;
+    height: 18px;
+    background: var(--teal);
+    border-radius: 2px;
+  }
+  .modal .sub {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 18px;
+    line-height: 1.55;
+  }
+  .modal label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--warm-gray);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .modal input[type="text"], .modal input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  .modal input:focus { outline: none; border-color: var(--teal); }
+  .modal .modal-err {
+    color: var(--red);
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .modal .url-example {
+    background: var(--warm-gray-light);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    margin: 8px 0 14px;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  .setup-link {
+    color: var(--teal);
+    font-size: 12px;
+    text-decoration: none;
+    border-bottom: 1px dotted var(--teal);
+    cursor: pointer;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .setup-link:hover { color: var(--teal-dark); }
+
+  /* Reveal animation for results */
+  .reveal {
+    animation: fadeUp .4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Processing overlay inside dropzone */
+  .processing {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 20px;
+  }
+  .processing.active { display: flex; }
+  .processing .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--line);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .processing .pmsg { font-size: 13px; color: var(--ink); font-weight: 600; }
+  .processing .psub { font-size: 12px; color: var(--ink-muted); }
+
+  .storage-pill {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: var(--green-soft);
+    color: var(--green);
+    font-weight: 600;
+  }
+  .storage-pill.empty {
+    background: var(--warm-gray-light);
+    color: var(--warm-gray);
+  }
+
+  /* Error toast */
+  .error-banner {
+    background: var(--red-soft);
+    border-left: 3px solid var(--red);
+    color: var(--red);
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    font-size: 13px;
+    display: none;
+  }
+  .error-banner.show { display: block; }
+  .error-banner strong { display: block; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOP BAR
+     ============================================================ -->
+<header class="topbar">
+  <div class="brand">
+    <img src="data:image/jpeg;base64,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" alt="Partners Mortgage">
+    <div class="brand-text">
+      <div class="product">Credit Scenario Estimator</div>
+      <div class="tagline">You matter.</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <span class="storage-pill empty" id="storagePill">No saved data</span>
+    <button class="btn btn-ghost btn-sm" onclick="openSetup()">Setup</button>
+    <button class="btn btn-outline btn-sm" onclick="resetAll()">Reset &amp; Clear</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ============================================================
+       PAGE HEADER
+       ============================================================ -->
+  <div class="page-header">
+    <div>
+      <h1>Borrower Credit <span class="accent">scenario builder</span></h1>
+      <p class="sub">Upload a credit report, identify opportunities, and model directional what-if scenarios for paydowns, payoffs, and mortgage readiness. Educational estimates only.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ERROR BANNER
+       ============================================================ -->
+  <div class="error-banner" id="errorBanner">
+    <strong>Extraction error</strong>
+    <span id="errorMessage"></span>
+  </div>
+
+  <!-- ============================================================
+       DISCLAIMER (always visible)
+       ============================================================ -->
+  <div class="disclaimer">
+    <strong>Compliance note.</strong> This tool produces educational estimates, not guarantees of score improvement. FICO and VantageScore models are proprietary, and actual score changes depend on the credit bureau, scoring model, reporting timing, and the borrower's full credit profile. This tool does not provide legal, credit repair, or financial advice. For accurate negative information, no removal is suggested. Borrowers with complex credit situations should be referred to a qualified credit counselor or financial professional.
+  </div>
+
+  <!-- ============================================================
+       UPLOAD CARD
+       ============================================================ -->
+  <div class="card">
+    <div class="card-header">
+      <h2>1. Upload Credit Report</h2>
+      <span class="meta">PDF or image. Data is processed in your browser only.</span>
+    </div>
+    <div class="card-body">
+      <div class="upload-row">
+        <label class="dropzone" id="dropzone" for="fileInput">
+          <div id="dropzoneIdle">
+            <div class="dropzone-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="strong">Drop credit report here, or click to browse</div>
+            <p>Supports PDF, PNG, JPG. Tri-merge reports work best.</p>
+          </div>
+          <div class="processing" id="dropzoneProcessing">
+            <div class="spinner"></div>
+            <div class="pmsg" id="pmsg">Extracting tradelines...</div>
+            <div class="psub" id="psub">This may take 20 to 60 seconds depending on report size.</div>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" onchange="handleFileUpload(event)">
+        </label>
+        <div class="upload-side">
+          <strong>What this tool does</strong>
+          Extracts tradelines, calculates utilization, and models directional what-if scenarios for credit improvement. Useful for pre-application conversations and for spotting mortgage qualification opportunities.
+          <br><br>
+          <strong>Privacy</strong>
+          The report is sent to Anthropic for vision-based extraction, then discarded. Extracted data is stored only in your browser's local storage on this device. Nothing is saved to a Partners Mortgage server. Click Reset &amp; Clear to wipe.
+          <br><br>
+          <strong>What it does not do</strong>
+          It does not predict exact FICO scores, advise on disputes, or replace a credit counselor.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       BORROWER SUMMARY (populated after parse)
+       ============================================================ -->
+  <div class="card" id="borrowerCard" style="display:none;">
+    <div class="card-header">
+      <h2>2. Borrower Profile</h2>
+      <span class="meta" id="reportMeta"></span>
+    </div>
+    <div class="card-body tight">
+      <div class="borrower-grid" id="borrowerGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       EXECUTIVE SUMMARY
+       ============================================================ -->
+  <div class="card" id="execCard" style="display:none;">
+    <div class="card-header">
+      <h2>Executive Summary</h2>
+      <span class="meta">At-a-glance opportunity assessment</span>
+    </div>
+    <div class="card-body">
+      <div class="exec-grid">
+        <div class="exec-tile">
+          <h3>Score Improvement Opportunities</h3>
+          <ul id="execScore"></ul>
+        </div>
+        <div class="exec-tile qual">
+          <h3>Mortgage Qualification Wins</h3>
+          <ul id="execQual"></ul>
+        </div>
+        <div class="exec-tile action">
+          <h3>Top 3 Recommended Actions</h3>
+          <ul id="execActions"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       DEBT TABLE
+       ============================================================ -->
+  <div class="card" id="debtCard" style="display:none;">
+    <div class="card-header">
+      <h2>3. Tradelines &amp; Debts</h2>
+      <span class="meta">Select accounts and enter paydown amounts to model a scenario.</span>
+    </div>
+    <div class="card-body tight">
+      <div class="table-wrap">
+        <table id="debtTable">
+          <thead>
+            <tr>
+              <th style="width:40px;"></th>
+              <th>Creditor</th>
+              <th>Type</th>
+              <th>Balance</th>
+              <th>Limit</th>
+              <th>Utilization</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Paydown</th>
+              <th>Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody id="debtBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SCENARIO BAR
+       ============================================================ -->
+  <div class="scenario-bar" id="scenarioBar" style="display:none;">
+    <div>
+      <h2>Scenario Builder</h2>
+      <p>Select debts above and choose a strategy. Toggle quick optimizers or run a custom selection.</p>
+    </div>
+    <div class="scenario-buttons">
+      <button class="btn primary-gold" onclick="runScenario()">Run Scenario</button>
+      <button class="btn" onclick="optimizeForScore()">Optimize for Score</button>
+      <button class="btn" onclick="optimizeForMonthlyPayment()">Optimize for Monthly Payment</button>
+      <button class="btn" onclick="optimizeForCashNeeded()">Optimize for Cash Needed</button>
+      <button class="btn" onclick="mortgageReadinessPlan()">Mortgage Readiness Plan</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SCENARIO RESULTS
+       ============================================================ -->
+  <div class="card" id="resultsCard" style="display:none;">
+    <div class="card-header">
+      <h2>4. Scenario Results</h2>
+      <span class="meta" id="scenarioLabel"></span>
+    </div>
+    <div class="card-body">
+
+      <div class="metrics-grid">
+        <div class="metric">
+          <div class="label">Cash Needed</div>
+          <div class="value" id="mCash">$0</div>
+          <div class="delta" id="mCashSub">For payoffs and paydowns</div>
+        </div>
+        <div class="metric">
+          <div class="label">Monthly Payment Reduced</div>
+          <div class="value" id="mMonthly">$0</div>
+          <div class="delta positive" id="mMonthlySub">DTI benefit</div>
+        </div>
+        <div class="metric">
+          <div class="label">Accounts Improved</div>
+          <div class="value" id="mAccounts">0</div>
+          <div class="delta" id="mAccountsSub">tradelines affected</div>
+        </div>
+        <div class="metric">
+          <div class="label">Aggregate Utilization</div>
+          <div class="value" id="mUtil">0%</div>
+          <div class="delta positive" id="mUtilSub">change</div>
+        </div>
+      </div>
+
+      <div class="results-grid">
+        <div>
+          <div class="util-compare">
+            <h4>Revolving Utilization — Before / After</h4>
+            <div class="util-rows" id="utilRows"></div>
+          </div>
+          <div class="crossings">
+            <h4>Threshold Crossings</h4>
+            <ul id="crossingsList"></ul>
+          </div>
+        </div>
+        <div>
+          <div class="score-impact">
+            <div class="label">Estimated Score Impact Range</div>
+            <div class="range"><span class="plus">+</span><span id="impactLow">0</span> to <span class="plus">+</span><span id="impactHigh">0</span></div>
+            <div class="unit">directional points, not a guarantee</div>
+            <div class="confidence" id="confidenceBadge">Low Confidence</div>
+            <div class="timing" id="timingNote"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="borrower-note">
+        <h4>Plain-English Explanation for the Borrower</h4>
+        <p id="borrowerExplanation"></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAINTENANCE PLAN
+       ============================================================ -->
+  <div class="card" id="planCard" style="display:none;">
+    <div class="card-header">
+      <h2>5. Borrower Credit Maintenance Plan</h2>
+      <span class="meta">Friendly, plain-language guidance to share with the borrower</span>
+    </div>
+    <div class="card-body">
+      <div class="plan-grid" id="planGrid"></div>
+
+      <div class="resources">
+        <h4>Trusted Public Resources</h4>
+        <ul>
+          <li><a href="https://www.consumerfinance.gov/consumer-tools/credit-reports-and-scores/" target="_blank" rel="noopener">CFPB — Credit Reports &amp; Scores</a></li>
+          <li><a href="https://www.ftc.gov/business-guidance/credit-reporting" target="_blank" rel="noopener">FTC — Credit Reporting</a></li>
+          <li><a href="https://www.myfico.com/credit-education" target="_blank" rel="noopener">myFICO — Credit Education</a></li>
+          <li><a href="https://www.experian.com/blogs/ask-experian/" target="_blank" rel="noopener">Experian — Educational Resources</a></li>
+          <li><a href="https://www.transunion.com/credit-advice" target="_blank" rel="noopener">TransUnion — Credit Advice</a></li>
+          <li><a href="https://www.equifax.com/personal/education/" target="_blank" rel="noopener">Equifax — Credit Education</a></li>
+          <li><a href="https://www.annualcreditreport.com/" target="_blank" rel="noopener">AnnualCreditReport.com</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SETTINGS (editable score impact assumptions)
+       ============================================================ -->
+  <div class="card" id="settingsCard" style="display:none;">
+    <div class="card-header">
+      <h2>Score Impact Assumptions</h2>
+      <span class="meta">Adjust conservative bands used by the estimator. Education only.</span>
+    </div>
+    <div class="card-body">
+      <div class="settings-row">
+        <div class="settings-field">
+          <label>Major Util Reduction — Low</label>
+          <input type="number" id="setMajorLow" value="20">
+        </div>
+        <div class="settings-field">
+          <label>Major Util Reduction — High</label>
+          <input type="number" id="setMajorHigh" value="60">
+        </div>
+        <div class="settings-field">
+          <label>Threshold Cross — Low</label>
+          <input type="number" id="setThreshLow" value="8">
+        </div>
+        <div class="settings-field">
+          <label>Threshold Cross — High</label>
+          <input type="number" id="setThreshHigh" value="25">
+        </div>
+        <div class="settings-field">
+          <label>Minor Change — Low</label>
+          <input type="number" id="setMinorLow" value="2">
+        </div>
+        <div class="settings-field">
+          <label>Minor Change — High</label>
+          <input type="number" id="setMinorHigh" value="10">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer>
+    <div class="tagline">You matter.</div>
+    Partners Mortgage &middot; 1687 Eureka Road, Suite 100, Roseville, CA 95661 &middot; (916) 270-9088<br>
+    Educational tool. Not credit repair, legal, or financial advice.
+  </footer>
+
+</div>
+
+<!-- ============================================================
+     SETUP MODAL (admin: paste API key)
+     ============================================================ -->
+<div class="modal-overlay" id="setupModal" onclick="if(event.target===this)closeSetup()">
+  <div class="modal">
+    <h3>API Key Setup</h3>
+    <p class="sub">
+      This tool needs an Anthropic API key to extract credit reports. Provision once per device.
+      The key is stored only in this browser's local storage and never sent anywhere except Anthropic.
+    </p>
+
+    <label>Option 1 — URL Method (recommended for rollout)</label>
+    <div class="url-example" id="urlExample">
+      https://yourdomain.com/?key=sk-ant-YOUR_KEY_HERE
+    </div>
+
+    <label for="keyInput">Option 2 — Paste Key Directly</label>
+    <input type="password" id="keyInput" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+    <div class="modal-err" id="keyErr"></div>
+
+    <div id="keyStatus" style="font-size:12px;color:var(--ink-muted);margin-top:10px;"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="removeKeyBtn" onclick="removeKey()" style="display:none;">Remove Key</button>
+      <button class="btn btn-outline btn-sm" onclick="closeSetup()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="submitKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   CREDIT SCENARIO ESTIMATOR — LOGIC
+   ================================================================
+   This is a rules-based DIRECTIONAL estimator.
+   It does NOT calculate a real FICO or VantageScore.
+   ================================================================ */
+
+/* ████████████████████████████████████████████████████████████████
+   ██                                                            ██
+   ██   API KEY PROVISIONING                                     ██
+   ██                                                            ██
+   ██   No key is stored in this file. The repo stays clean.    ██
+   ██                                                            ██
+   ██   To provision a device:                                   ██
+   ██   1. Open the site with ?key=sk-ant-YOUR_KEY in the URL   ██
+   ██      Example:                                              ██
+   ██      https://...github.io/CreditScenarioEstimator/         ██
+   ██        ?key=sk-ant-abc123...                              ██
+   ██   2. Site captures the key, stores in localStorage,       ██
+   ██      and redirects to the clean URL.                       ██
+   ██   3. The key never appears in the URL bar again.           ██
+   ██                                                            ██
+   ██   Alternative: click "Setup" on the upload card and        ██
+   ██   paste the key into the field.                            ██
+   ██                                                            ██
+   ████████████████████████████████████████████████████████████████ */
+
+const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
+const KEY_STORAGE_NAME = 'pm_credit_anthropic_key';
+
+// Reads the key from localStorage. Returns empty string if not provisioned.
+function getApiKey() {
+  try { return localStorage.getItem(KEY_STORAGE_NAME) || ''; }
+  catch (e) { return ''; }
+}
+
+// Captures a key from the URL (?key=sk-ant-...) on page load,
+// stores it in localStorage, then strips it from the URL so it
+// doesn't sit in browser history or get shoulder-surfed.
+function captureKeyFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const urlKey = params.get('key');
+  if (urlKey && urlKey.startsWith('sk-ant-') && urlKey.length > 30) {
+    try {
+      localStorage.setItem(KEY_STORAGE_NAME, urlKey);
+    } catch (e) {
+      console.error('Could not save key to localStorage:', e);
+      alert('Could not save API key. Check that localStorage is enabled in this browser.');
+      return false;
+    }
+    // Strip ?key=... from URL without reloading the page
+    params.delete('key');
+    const newQuery = params.toString();
+    const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '') + window.location.hash;
+    window.history.replaceState({}, document.title, newUrl);
+    return true;
+  }
+  return false;
+}
+
+// Manually save a pasted key (from the Setup dialog).
+function saveApiKey(key) {
+  key = (key || '').trim();
+  if (!key.startsWith('sk-ant-') || key.length < 30) {
+    return { ok: false, error: 'Key should start with sk-ant- and be at least 30 characters.' };
+  }
+  try {
+    localStorage.setItem(KEY_STORAGE_NAME, key);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: 'Could not save to localStorage. ' + e.message };
+  }
+}
+
+function clearApiKey() {
+  try { localStorage.removeItem(KEY_STORAGE_NAME); } catch (e) {}
+}
+
+function isApiKeyConfigured() {
+  const k = getApiKey();
+  return typeof k === 'string' && k.startsWith('sk-ant-') && k.length > 30;
+}
+
+/* ----------------------------------------------------------------
+   SETUP MODAL HANDLERS
+   ---------------------------------------------------------------- */
+function openSetup() {
+  // Build a real example URL for the current deployment
+  const base = window.location.origin + window.location.pathname;
+  document.getElementById('urlExample').textContent = base + '?key=sk-ant-YOUR_KEY_HERE';
+
+  // Show current configuration status
+  const status = document.getElementById('keyStatus');
+  const removeBtn = document.getElementById('removeKeyBtn');
+  if (isApiKeyConfigured()) {
+    const k = getApiKey();
+    const masked = k.slice(0, 11) + '...' + k.slice(-4);
+    status.innerHTML = `<span style="color:var(--green);font-weight:600;">✓ Configured</span> &middot; ${masked}`;
+    removeBtn.style.display = '';
+  } else {
+    status.innerHTML = `<span style="color:var(--amber);font-weight:600;">⚠ Not configured</span> &middot; This device cannot run extractions until a key is provisioned.`;
+    removeBtn.style.display = 'none';
+  }
+
+  document.getElementById('keyErr').textContent = '';
+  document.getElementById('keyInput').value = '';
+  document.getElementById('setupModal').classList.add('show');
+  setTimeout(() => document.getElementById('keyInput').focus(), 50);
+}
+
+function closeSetup() {
+  document.getElementById('setupModal').classList.remove('show');
+  document.getElementById('keyInput').value = '';
+}
+
+function submitKey() {
+  const key = document.getElementById('keyInput').value;
+  const result = saveApiKey(key);
+  if (!result.ok) {
+    document.getElementById('keyErr').textContent = result.error;
+    return;
+  }
+  closeSetup();
+  // Refresh upload card if it was showing the "not configured" state
+  refreshDropzoneState();
+}
+
+function removeKey() {
+  if (!confirm('Remove the API key from this device? You will need to re-provision before running another extraction.')) {
+    return;
+  }
+  clearApiKey();
+  closeSetup();
+  refreshDropzoneState();
+}
+
+// Toggles the dropzone between "ready" and "needs setup" states.
+function refreshDropzoneState() {
+  const idle = document.getElementById('dropzoneIdle');
+  const fileInput = document.getElementById('fileInput');
+  const dropzone = document.getElementById('dropzone');
+
+  if (!isApiKeyConfigured()) {
+    idle.innerHTML = `
+      <div class="dropzone-icon" style="background:var(--gold-soft);color:var(--amber);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 22h20L12 2z"/>
+          <line x1="12" y1="9" x2="12" y2="14"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="strong">Setup required</div>
+      <p>This device needs an API key before it can extract credit reports.<br>
+      <button class="setup-link" type="button" onclick="event.preventDefault();event.stopPropagation();openSetup();">Open Setup</button> &middot; contact your administrator if you don't have a key.</p>
+    `;
+    fileInput.disabled = true;
+    dropzone.style.cursor = 'not-allowed';
+  } else {
+    idle.innerHTML = `
+      <div class="dropzone-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="strong">Drop credit report here, or click to browse</div>
+      <p>Supports PDF, PNG, JPG. Tri-merge reports work best.</p>
+    `;
+    fileInput.disabled = false;
+    dropzone.style.cursor = '';
+  }
+}
+
+/* ----------------------------------------------------------------
+   LOCAL STORAGE
+   ----------------------------------------------------------------
+   Borrower data persists in localStorage on the LO's device only.
+   Nothing is ever sent to a server (other than the report image/
+   PDF being sent to Anthropic for extraction, then discarded).
+   The Reset button clears all stored data.
+   ---------------------------------------------------------------- */
+const STORAGE_KEY = 'pm_credit_scenario_v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      borrower: state.borrower,
+      tradelines: state.tradelines,
+      inquiries: state.inquiries,
+      savedAt: new Date().toISOString(),
+    }));
+    updateStoragePill();
+  } catch (e) {
+    console.warn('Could not save state:', e);
+  }
+}
+
+function loadSavedState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearSavedState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  updateStoragePill();
+}
+
+function updateStoragePill() {
+  const pill = document.getElementById('storagePill');
+  const saved = loadSavedState();
+  if (saved && saved.borrower) {
+    const when = new Date(saved.savedAt);
+    const ago = Math.floor((Date.now() - when.getTime()) / 60000);
+    let label;
+    if (ago < 1) label = 'Saved just now';
+    else if (ago < 60) label = `Saved ${ago}m ago`;
+    else if (ago < 1440) label = `Saved ${Math.floor(ago/60)}h ago`;
+    else label = `Saved ${Math.floor(ago/1440)}d ago`;
+    pill.textContent = label;
+    pill.classList.remove('empty');
+  } else {
+    pill.textContent = 'No saved data';
+    pill.classList.add('empty');
+  }
+}
+
+/* ----------------------------------------------------------------
+   ERROR DISPLAY
+   ---------------------------------------------------------------- */
+function showError(msg) {
+  document.getElementById('errorMessage').textContent = msg;
+  document.getElementById('errorBanner').classList.add('show');
+  setTimeout(() => document.getElementById('errorBanner').classList.remove('show'), 8000);
+}
+function clearError() {
+  document.getElementById('errorBanner').classList.remove('show');
+}
+
+/* ----------------------------------------------------------------
+   STATE
+   ---------------------------------------------------------------- */
+let state = {
+  borrower: null,
+  tradelines: [],
+  inquiries: [],
+  scenarioLabel: '',
+};
+
+/* ----------------------------------------------------------------
+   CREDIT REPORT EXTRACTION (Anthropic Vision API)
+   ----------------------------------------------------------------
+   Sends the uploaded credit report (PDF or image) to Claude Sonnet
+   for vision-based extraction. Returns a structured object.
+
+   The file is sent directly to Anthropic. Nothing is logged or
+   persisted by Partners Mortgage servers (there are no Partners
+   Mortgage servers in this flow).
+   ---------------------------------------------------------------- */
+
+const EXTRACTION_PROMPT = `You are extracting credit report data for a mortgage loan officer's analysis tool.
+
+Extract ALL tradelines and credit data from this credit report into the following JSON structure. Return ONLY valid JSON, no other text, no markdown fences.
+
+{
+  "borrower": {
+    "name": "Borrower Full Name",
+    "reportDate": "Month DD, YYYY",
+    "scores": {
+      "equifax": 000,
+      "experian": 000,
+      "transunion": 000
+    }
+  },
+  "tradelines": [
+    {
+      "id": "t1",
+      "creditor": "Account name as shown",
+      "type": "revolving | installment | mortgage | auto | student | collection | chargeoff",
+      "balance": 0,
+      "limit": 0,
+      "payment": 0,
+      "pastDue": 0,
+      "status": "current | collection | chargeoff | late",
+      "dateOpened": "YYYY-MM",
+      "lastReported": "YYYY-MM",
+      "lateHistory": "none | 1x30 (2025) | 2x60 etc",
+      "medical": false,
+      "authorizedUser": false
+    }
+  ],
+  "inquiries": [
+    { "creditor": "Lender Name", "date": "YYYY-MM" }
+  ]
+}
+
+Rules:
+- Give each tradeline a unique id like "t1", "t2", "t3".
+- For account "type", use exactly one of: revolving, installment, mortgage, auto, student, collection, chargeoff.
+- For revolving accounts (credit cards), include the credit limit. For non-revolving accounts, use 0 for limit.
+- All dollar amounts as numbers (no $ or commas).
+- If a score is not shown for a bureau, omit that field (do not invent it).
+- For medical collections, set medical: true. Otherwise false.
+- For authorized user accounts, set authorizedUser: true.
+- Only include inquiries from the last 12 months if dated.
+- If a field is not visible or readable, use sensible defaults (0 for amounts, "none" for lateHistory, "current" for status).
+- Do not include public records as tradelines; if you see any, note them in a separate "publicRecords" array.
+- Extract everything visible. Do not skip accounts.`;
+
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Sends the file to the Anthropic API and returns parsed JSON.
+async function parseCreditReportOCR(file) {
+  if (!isApiKeyConfigured()) {
+    throw new Error('API key not configured. Sample mode only.');
+  }
+
+  const base64 = await fileToBase64(file);
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+  const content = [];
+  if (isPdf) {
+    content.push({
+      type: 'document',
+      source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+    });
+  } else {
+    // Image: detect media type
+    let mediaType = file.type;
+    if (!mediaType || !mediaType.startsWith('image/')) {
+      const ext = file.name.toLowerCase().split('.').pop();
+      mediaType = ext === 'png' ? 'image/png' :
+                  ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+                  ext === 'webp' ? 'image/webp' : 'image/jpeg';
+    }
+    content.push({
+      type: 'image',
+      source: { type: 'base64', media_type: mediaType, data: base64 }
+    });
+  }
+  content.push({ type: 'text', text: EXTRACTION_PROMPT });
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': getApiKey(),
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 8000,
+      messages: [{ role: 'user', content }],
+    }),
+  });
+
+  if (!response.ok) {
+    let detail = '';
+    try { detail = (await response.json()).error?.message || ''; } catch (e) {}
+    throw new Error(`API ${response.status}: ${detail || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const text = data.content.map(b => b.text || '').join('');
+
+  // Strip any markdown fences if Claude adds them
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+// Validates and normalizes the extracted data.
+function extractTradelines(parsed) {
+  if (!parsed || !parsed.tradelines) {
+    throw new Error('Extraction returned no tradeline data.');
+  }
+  // Ensure required structure
+  const out = {
+    borrower: {
+      name: parsed.borrower?.name || 'Unknown Borrower',
+      reportDate: parsed.borrower?.reportDate || new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}),
+      scores: {
+        equifax: parsed.borrower?.scores?.equifax || 0,
+        experian: parsed.borrower?.scores?.experian || 0,
+        transunion: parsed.borrower?.scores?.transunion || 0,
+      },
+    },
+    tradelines: parsed.tradelines.map((t, i) => ({
+      id: t.id || `t${i+1}`,
+      creditor: t.creditor || 'Unknown',
+      type: t.type || 'installment',
+      balance: Number(t.balance) || 0,
+      limit: Number(t.limit) || 0,
+      payment: Number(t.payment) || 0,
+      pastDue: Number(t.pastDue) || 0,
+      status: t.status || 'current',
+      dateOpened: t.dateOpened || '',
+      lastReported: t.lastReported || '',
+      lateHistory: t.lateHistory || 'none',
+      medical: !!t.medical,
+      authorizedUser: !!t.authorizedUser,
+    })),
+    inquiries: (parsed.inquiries || []).map(q => ({
+      creditor: q.creditor || 'Unknown',
+      date: q.date || '',
+    })),
+  };
+  return out;
+}
+
+/* ----------------------------------------------------------------
+   UPLOAD HANDLING
+   ---------------------------------------------------------------- */
+const dropzone = document.getElementById('dropzone');
+['dragenter', 'dragover'].forEach(ev => {
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('drag'); });
+});
+['dragleave', 'drop'].forEach(ev => {
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('drag'); });
+});
+dropzone.addEventListener('drop', e => {
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+async function handleFileUpload(event) {
+  if (event.target.files.length) await handleFile(event.target.files[0]);
+}
+
+async function handleFile(file) {
+  clearError();
+
+  if (!isApiKeyConfigured()) {
+    showError('API key not configured. Contact your administrator.');
+    return;
+  }
+
+  // Show processing state
+  document.getElementById('dropzoneIdle').style.display = 'none';
+  document.getElementById('dropzoneProcessing').classList.add('active');
+  document.getElementById('pmsg').textContent = 'Reading credit report...';
+  document.getElementById('psub').textContent = `Sending ${file.name} to Anthropic for extraction.`;
+
+  try {
+    // Step 1: Vision-based extraction
+    document.getElementById('pmsg').textContent = 'Extracting tradelines...';
+    document.getElementById('psub').textContent = 'Claude is reading the report. This may take 20 to 60 seconds.';
+    const raw = await parseCreditReportOCR(file);
+
+    // Step 2: Normalize
+    document.getElementById('pmsg').textContent = 'Structuring data...';
+    document.getElementById('psub').textContent = 'Validating extracted tradelines.';
+    const parsed = extractTradelines(raw);
+
+    // Step 3: Load into UI and save
+    loadData(parsed);
+    saveState();
+  } catch (err) {
+    console.error('Extraction failed:', err);
+    showError(`Could not extract data from this report: ${err.message}. Try a clearer file or a different format.`);
+  } finally {
+    // Reset dropzone UI
+    document.getElementById('dropzoneIdle').style.display = '';
+    document.getElementById('dropzoneProcessing').classList.remove('active');
+    document.getElementById('fileInput').value = '';
+  }
+}
+
+function resetAll() {
+  if (state.borrower && !confirm('This will clear all extracted borrower data from this device. Continue?')) {
+    return;
+  }
+  state = { borrower: null, tradelines: [], inquiries: [], scenarioLabel: '' };
+  clearSavedState();
+  ['borrowerCard','execCard','debtCard','scenarioBar','resultsCard','planCard','settingsCard']
+    .forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('fileInput').value = '';
+  clearError();
+}
+
+/* ----------------------------------------------------------------
+   LOAD DATA INTO STATE & RENDER ALL CARDS
+   ---------------------------------------------------------------- */
+function loadData(data) {
+  state.borrower = data.borrower;
+  state.tradelines = data.tradelines.map(t => ({
+    ...t,
+    selected: false,
+    paydownAmount: 0,
+  }));
+  state.inquiries = data.inquiries || [];
+
+  renderBorrower();
+  renderDebtTable();
+  renderExecutiveSummary();
+  renderMaintenancePlan();
+
+  ['borrowerCard','execCard','debtCard','scenarioBar','planCard','settingsCard']
+    .forEach(id => document.getElementById(id).style.display = '');
+  document.getElementById('resultsCard').style.display = 'none';
+}
+
+/* ----------------------------------------------------------------
+   UTILIZATION CALCULATIONS
+   ---------------------------------------------------------------- */
+function calculateUtilization(tradelines) {
+  const revolving = tradelines.filter(t => t.type === 'revolving');
+  const totalBal = revolving.reduce((s, t) => s + t.balance, 0);
+  const totalLimit = revolving.reduce((s, t) => s + t.limit, 0);
+  return {
+    totalBal,
+    totalLimit,
+    aggregate: totalLimit > 0 ? totalBal / totalLimit : 0,
+    perAccount: revolving.map(t => ({
+      id: t.id,
+      creditor: t.creditor,
+      util: t.limit > 0 ? t.balance / t.limit : 0,
+      balance: t.balance,
+      limit: t.limit,
+    })),
+  };
+}
+
+function utilBand(u) {
+  if (u >= 0.9) return 'crit';
+  if (u >= 0.7) return 'high';
+  if (u >= 0.3) return 'med';
+  return 'low';
+}
+
+function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+function pct(n) { return (n * 100).toFixed(0) + '%'; }
+function pct1(n) { return (n * 100).toFixed(1) + '%'; }
+
+/* ----------------------------------------------------------------
+   RENDER BORROWER SUMMARY
+   ---------------------------------------------------------------- */
+function renderBorrower() {
+  const b = state.borrower;
+  const grid = document.getElementById('borrowerGrid');
+  const util = calculateUtilization(state.tradelines);
+
+  document.getElementById('reportMeta').textContent = `Report dated ${b.reportDate}`;
+
+  const lowest = Math.min(b.scores.equifax, b.scores.experian, b.scores.transunion);
+  const highest = Math.max(b.scores.equifax, b.scores.experian, b.scores.transunion);
+
+  function scoreClass(s) {
+    if (s >= 740) return 'excellent';
+    if (s >= 670) return 'good';
+    if (s >= 580) return 'fair';
+    return 'poor';
+  }
+  function scoreLabel(s) {
+    if (s >= 740) return 'Excellent';
+    if (s >= 670) return 'Good';
+    if (s >= 580) return 'Fair';
+    return 'Poor';
+  }
+
+  grid.innerHTML = `
+    <div class="borrower-cell">
+      <div class="label">Borrower</div>
+      <div class="value" style="font-size:15px;">${b.name}</div>
+      <div class="subvalue">Report: ${b.reportDate}</div>
+    </div>
+    <div class="borrower-cell">
+      <div class="label">Equifax</div>
+      <div class="value score">${b.scores.equifax} <span class="score-pill ${scoreClass(b.scores.equifax)}">${scoreLabel(b.scores.equifax)}</span></div>
+    </div>
+    <div class="borrower-cell">
+      <div class="label">Experian</div>
+      <div class="value score">${b.scores.experian} <span class="score-pill ${scoreClass(b.scores.experian)}">${scoreLabel(b.scores.experian)}</span></div>
+    </div>
+    <div class="borrower-cell">
+      <div class="label">TransUnion</div>
+      <div class="value score">${b.scores.transunion} <span class="score-pill ${scoreClass(b.scores.transunion)}">${scoreLabel(b.scores.transunion)}</span></div>
+    </div>
+    <div class="borrower-cell">
+      <div class="label">Mid Score (Mortgage)</div>
+      <div class="value score">${median([b.scores.equifax, b.scores.experian, b.scores.transunion])}</div>
+      <div class="subvalue">Range: ${lowest} – ${highest}</div>
+    </div>
+    <div class="borrower-cell">
+      <div class="label">Aggregate Revolving Util</div>
+      <div class="value" style="color:${util.aggregate >= .3 ? 'var(--red)' : 'var(--green)'}">${pct(util.aggregate)}</div>
+      <div class="subvalue">${fmt(util.totalBal)} of ${fmt(util.totalLimit)}</div>
+    </div>
+    <div class="borrower-cell">
+      <div class="label">Recent Inquiries</div>
+      <div class="value">${state.inquiries.length}</div>
+      <div class="subvalue">last 12 months</div>
+    </div>
+  `;
+}
+
+function median(arr) {
+  const sorted = [...arr].sort((a,b) => a-b);
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+/* ----------------------------------------------------------------
+   RENDER DEBT TABLE
+   ---------------------------------------------------------------- */
+function renderDebtTable() {
+  const body = document.getElementById('debtBody');
+  body.innerHTML = state.tradelines.map(t => {
+    const isRevolving = t.type === 'revolving';
+    const u = isRevolving && t.limit > 0 ? t.balance / t.limit : null;
+    const band = u !== null ? utilBand(u) : null;
+    const action = recommendAction(t);
+
+    return `
+      <tr id="row-${t.id}" class="${t.selected ? 'selected' : ''}">
+        <td><input type="checkbox" class="checkbox" ${t.selected ? 'checked' : ''} onchange="toggleSelect('${t.id}', this.checked)"></td>
+        <td>
+          <div class="creditor-name">${t.creditor}</div>
+          <div class="creditor-sub">Opened ${t.dateOpened || '—'}</div>
+        </td>
+        <td><span class="badge ${t.type}">${typeLabel(t.type)}</span></td>
+        <td>${fmt(t.balance)}</td>
+        <td>${t.limit ? fmt(t.limit) : '—'}</td>
+        <td>
+          ${u !== null ? `
+            <span class="util-label ${band}">${pct(u)}</span>
+            <div class="util-bar"><div class="fill ${band}" style="width:${Math.min(100, u*100)}%"></div></div>
+          ` : '<span style="color:var(--ink-muted)">—</span>'}
+        </td>
+        <td>${fmt(t.payment)}</td>
+        <td>${statusLabel(t)}</td>
+        <td><input type="number" class="paydown-input" placeholder="0" value="${t.paydownAmount || ''}" oninput="updatePaydown('${t.id}', this.value)"></td>
+        <td class="impact-cell">
+          <span class="impact-tag ${action.priority}">${action.title}</span>
+          ${action.detail}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function typeLabel(t) {
+  return { revolving:'Revolving', installment:'Installment', mortgage:'Mortgage',
+    auto:'Auto', student:'Student', collection:'Collection', chargeoff:'Charge-off' }[t] || t;
+}
+
+function statusLabel(t) {
+  if (t.status === 'collection') return '<span class="status-bad">Collection</span>';
+  if (t.status === 'chargeoff') return '<span class="status-bad">Charge-off</span>';
+  if (t.lateHistory && t.lateHistory !== 'none' && t.lateHistory !== 'collection')
+    return `<span class="status-warn">${t.lateHistory}</span>`;
+  return '<span class="status-good">Current</span>';
+}
+
+/* ----------------------------------------------------------------
+   RECOMMENDED ACTION PER TRADELINE
+   ---------------------------------------------------------------- */
+function recommendAction(t) {
+  if (t.type === 'collection') {
+    const med = t.medical ? 'medical ' : '';
+    return {
+      priority: 'med',
+      title: 'Evaluate payoff',
+      detail: `Paid ${med}collections may or may not improve score depending on model. Confirm accuracy. May help mortgage underwriting.`,
+    };
+  }
+  if (t.type === 'chargeoff') {
+    return {
+      priority: 'med',
+      title: 'Evaluate payoff',
+      detail: 'Confirm accuracy. Payoff impact on score varies by model. May help mortgage approval.',
+    };
+  }
+  if (t.type === 'revolving' && t.limit > 0) {
+    const u = t.balance / t.limit;
+    if (u >= 0.9) return { priority: 'high', title: 'High priority paydown', detail: 'Maxed-out card. Bringing below 90/70 thresholds typically moves the needle most.' };
+    if (u >= 0.7) return { priority: 'high', title: 'Strong paydown candidate', detail: 'Above 70%. Reducing toward 30% can have a moderate-to-strong directional impact.' };
+    if (u >= 0.3) return { priority: 'med', title: 'Moderate paydown', detail: 'Above 30%. Reducing below 30% may help.' };
+    return { priority: 'low', title: 'Maintain', detail: 'Utilization already healthy.' };
+  }
+  if (t.type === 'auto' || t.type === 'installment') {
+    return {
+      priority: 'low',
+      title: 'DTI benefit if eliminated',
+      detail: 'Installment paydowns usually have smaller score impact. Eliminating payment helps DTI for mortgage qualification.',
+    };
+  }
+  if (t.type === 'student') {
+    return {
+      priority: 'low',
+      title: 'DTI benefit if reduced',
+      detail: 'Student loans factor into DTI. Consult on IBR vs. standard payment for mortgage qualification.',
+    };
+  }
+  return { priority: 'low', title: 'Maintain', detail: 'Keep current.' };
+}
+
+/* ----------------------------------------------------------------
+   SELECTION & PAYDOWN HANDLERS
+   ---------------------------------------------------------------- */
+function toggleSelect(id, checked) {
+  const t = state.tradelines.find(t => t.id === id);
+  if (!t) return;
+  t.selected = checked;
+  // If selected and no paydown amount entered, default to full balance
+  if (checked && !t.paydownAmount) {
+    t.paydownAmount = t.balance;
+  }
+  if (!checked) t.paydownAmount = 0;
+  renderDebtTable();
+}
+
+function updatePaydown(id, val) {
+  const t = state.tradelines.find(t => t.id === id);
+  if (!t) return;
+  const num = parseFloat(val) || 0;
+  t.paydownAmount = Math.min(num, t.balance);
+  t.selected = num > 0;
+  // Update row class without full re-render to preserve input focus
+  const row = document.getElementById(`row-${id}`);
+  if (row) row.classList.toggle('selected', t.selected);
+}
+
+/* ----------------------------------------------------------------
+   EXECUTIVE SUMMARY
+   ---------------------------------------------------------------- */
+function renderExecutiveSummary() {
+  const util = calculateUtilization(state.tradelines);
+  const scoreOps = [];
+  const qualOps = [];
+  const actions = [];
+
+  // Score improvement opportunities
+  if (util.aggregate >= 0.5) {
+    scoreOps.push(`Aggregate revolving utilization at ${pct(util.aggregate)} is well above the 30% guideline. Largest leverage point.`);
+  } else if (util.aggregate >= 0.3) {
+    scoreOps.push(`Aggregate utilization at ${pct(util.aggregate)} is above 30%. Bringing it below 30% may help.`);
+  }
+  const maxed = util.perAccount.filter(a => a.util >= 0.9);
+  if (maxed.length) {
+    scoreOps.push(`${maxed.length} card${maxed.length>1?'s':''} at or near max: ${maxed.map(a => a.creditor).join(', ')}.`);
+  }
+  const collections = state.tradelines.filter(t => t.type === 'collection');
+  if (collections.length) {
+    scoreOps.push(`${collections.length} open collection${collections.length>1?'s':''} — evaluate for payoff and accuracy.`);
+  }
+  if (state.inquiries.length >= 3) {
+    scoreOps.push(`${state.inquiries.length} recent inquiries. Educate borrower on avoiding new credit before mortgage application.`);
+  }
+
+  // Mortgage qualification wins
+  const installmentSoon = state.tradelines.filter(t =>
+    (t.type === 'auto' || t.type === 'installment' || t.type === 'student') && t.payment > 0
+  ).sort((a,b) => b.payment - a.payment).slice(0, 3);
+  installmentSoon.forEach(t => {
+    qualOps.push(`Pay off ${t.creditor} to remove ${fmt(t.payment)}/mo from DTI calculation.`);
+  });
+  const highUtilCards = util.perAccount.filter(a => a.util >= 0.7);
+  if (highUtilCards.length) {
+    qualOps.push(`Bringing high-util cards under 30% can improve mortgage pricing tiers.`);
+  }
+
+  // Top 3 recommended actions
+  if (util.aggregate >= 0.3) {
+    actions.push(`Target aggregate revolving utilization below 30% (currently ${pct(util.aggregate)}).`);
+  }
+  if (maxed.length) {
+    actions.push(`Pay down maxed cards first to cross 90% / 70% / 50% / 30% thresholds.`);
+  }
+  if (collections.length) {
+    actions.push(`Validate collection accounts for accuracy before any payoff. Refer to credit counselor if needed.`);
+  }
+  if (actions.length < 3) {
+    actions.push(`Pay every account on time, every cycle, between now and close.`);
+  }
+  if (actions.length < 3) {
+    actions.push(`Avoid opening new credit lines until after closing.`);
+  }
+
+  document.getElementById('execScore').innerHTML = scoreOps.length
+    ? scoreOps.slice(0,4).map(s => `<li><span class="dot"></span>${s}</li>`).join('')
+    : '<li style="color:var(--ink-muted)">No major score-improvement opportunities flagged.</li>';
+  document.getElementById('execQual').innerHTML = qualOps.length
+    ? qualOps.slice(0,4).map(s => `<li><span class="dot"></span>${s}</li>`).join('')
+    : '<li style="color:var(--ink-muted)">No major DTI/qualification opportunities flagged.</li>';
+  document.getElementById('execActions').innerHTML = actions.slice(0,3)
+    .map(s => `<li><span class="dot"></span>${s}</li>`).join('');
+}
+
+/* ----------------------------------------------------------------
+   SCENARIO ENGINE
+   ---------------------------------------------------------------- */
+function runScenario(label) {
+  state.scenarioLabel = label || 'Custom Selection';
+  document.getElementById('scenarioLabel').textContent = state.scenarioLabel;
+
+  // Build "after" tradelines applying paydowns
+  const after = state.tradelines.map(t => {
+    const pay = t.selected ? (t.paydownAmount || 0) : 0;
+    const newBal = Math.max(0, t.balance - pay);
+    const paidOff = pay >= t.balance;
+    return {
+      ...t,
+      _paydown: pay,
+      _newBalance: newBal,
+      _paidOff: paidOff,
+      _newPayment: paidOff ? 0 : t.payment,
+    };
+  });
+
+  const utilBefore = calculateUtilization(state.tradelines);
+  const utilAfter = calculateUtilization(
+    after.map(t => ({ ...t, balance: t._newBalance }))
+  );
+
+  const cashNeeded = after.reduce((s, t) => s + t._paydown, 0);
+  const monthlyReduced = after.reduce((s, t) => s + (t._paidOff ? t.payment : 0), 0);
+  const accountsImproved = after.filter(t => t._paydown > 0).length;
+
+  // Compute threshold crossings & score impact
+  const crossings = [];
+  utilBefore.perAccount.forEach(beforeAcct => {
+    const afterAcct = utilAfter.perAccount.find(a => a.id === beforeAcct.id);
+    if (!afterAcct) return;
+    const thresholds = [0.9, 0.7, 0.5, 0.3, 0.1];
+    thresholds.forEach(th => {
+      if (beforeAcct.util > th && afterAcct.util <= th) {
+        crossings.push({
+          creditor: beforeAcct.creditor,
+          from: beforeAcct.util,
+          to: afterAcct.util,
+          threshold: th,
+        });
+      }
+    });
+  });
+  // Paid-off collections
+  after.filter(t => t.type === 'collection' && t._paidOff).forEach(t => {
+    crossings.push({ creditor: t.creditor, special: 'collection-paid' });
+  });
+
+  // Score impact bands (editable in settings)
+  const major = [Number(document.getElementById('setMajorLow').value)||20,
+                 Number(document.getElementById('setMajorHigh').value)||60];
+  const thresh = [Number(document.getElementById('setThreshLow').value)||8,
+                  Number(document.getElementById('setThreshHigh').value)||25];
+  const minor = [Number(document.getElementById('setMinorLow').value)||2,
+                 Number(document.getElementById('setMinorHigh').value)||10];
+
+  const utilDelta = utilBefore.aggregate - utilAfter.aggregate;
+  let lowImpact = 0, highImpact = 0;
+  let confidence = 'low';
+
+  // Major aggregate reduction
+  if (utilDelta >= 0.30) {
+    lowImpact += major[0];
+    highImpact += major[1];
+    confidence = 'med';
+  } else if (utilDelta >= 0.15) {
+    lowImpact += Math.round(major[0] * 0.6);
+    highImpact += Math.round(major[1] * 0.6);
+    confidence = 'med';
+  } else if (utilDelta >= 0.05) {
+    lowImpact += minor[0];
+    highImpact += minor[1];
+  }
+
+  // Threshold crossings (individual cards) — each adds incremental impact
+  const utilCrossings = crossings.filter(c => !c.special);
+  if (utilCrossings.length) {
+    lowImpact += thresh[0];
+    highImpact += thresh[1];
+    if (utilCrossings.length >= 3) {
+      lowImpact += Math.round(thresh[0] * 0.5);
+      highImpact += Math.round(thresh[1] * 0.5);
+      confidence = 'high';
+    } else if (utilCrossings.length >= 2 && confidence !== 'high') {
+      confidence = 'med';
+    }
+  }
+
+  // If everything aggregates to under 9% from above
+  if (utilBefore.aggregate > 0.1 && utilAfter.aggregate <= 0.09) {
+    lowImpact += minor[0];
+    highImpact += minor[1];
+  }
+
+  // Cap the range to keep estimates conservative
+  highImpact = Math.min(highImpact, 100);
+  lowImpact = Math.min(lowImpact, highImpact);
+
+  // RENDER METRICS
+  document.getElementById('mCash').textContent = fmt(cashNeeded);
+  document.getElementById('mMonthly').textContent = fmt(monthlyReduced) + '/mo';
+  document.getElementById('mAccounts').textContent = accountsImproved;
+  document.getElementById('mUtil').textContent = pct(utilAfter.aggregate);
+  document.getElementById('mUtilSub').textContent =
+    `${pct(utilBefore.aggregate)} → ${pct(utilAfter.aggregate)} (-${pct(utilDelta)})`;
+
+  // Per-account utilization comparison
+  const ur = document.getElementById('utilRows');
+  ur.innerHTML = utilBefore.perAccount.map(b => {
+    const a = utilAfter.perAccount.find(x => x.id === b.id);
+    const beforeW = Math.min(100, b.util * 100);
+    const afterW = Math.min(100, a.util * 100);
+    return `
+      <div class="util-row">
+        <div class="rl">${b.creditor.split(' ')[0]}</div>
+        <div class="rb"><div class="fill before" style="width:${beforeW}%"></div></div>
+        <div class="rv">${pct(b.util)}</div>
+      </div>
+      <div class="util-row">
+        <div class="rl" style="font-size:11px;color:var(--green);">after</div>
+        <div class="rb"><div class="fill after" style="width:${afterW}%"></div></div>
+        <div class="rv" style="color:var(--green)">${pct(a.util)}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Threshold crossings list
+  const cl = document.getElementById('crossingsList');
+  if (crossings.length) {
+    cl.innerHTML = crossings.map(c => {
+      if (c.special === 'collection-paid') {
+        return `<li><span class="who">${c.creditor}</span><span class="what">Collection paid</span></li>`;
+      }
+      return `<li><span class="who">${c.creditor}</span><span class="what">crossed ${pct(c.threshold)} (${pct(c.from)} → ${pct(c.to)})</span></li>`;
+    }).join('');
+  } else {
+    cl.innerHTML = '<li class="empty">No major utilization thresholds crossed by this scenario.</li>';
+  }
+
+  // Score impact + confidence + timing
+  document.getElementById('impactLow').textContent = lowImpact;
+  document.getElementById('impactHigh').textContent = highImpact;
+  const cb = document.getElementById('confidenceBadge');
+  cb.textContent = confidence === 'high' ? 'Higher Confidence' :
+                   confidence === 'med' ? 'Moderate Confidence' : 'Lower Confidence';
+  cb.className = 'confidence ' + confidence;
+
+  document.getElementById('timingNote').textContent =
+    `Estimated timing: changes typically appear 1–2 statement cycles after creditors report to bureaus. Educational estimate only — actual impact varies by scoring model and full profile.`;
+
+  // Borrower explanation
+  document.getElementById('borrowerExplanation').textContent =
+    generateBorrowerExplanation({
+      cashNeeded, monthlyReduced, utilBefore, utilAfter, crossings, accountsImproved,
+      lowImpact, highImpact, confidence,
+    });
+
+  // Show results
+  document.getElementById('resultsCard').style.display = '';
+  document.getElementById('resultsCard').classList.remove('reveal');
+  void document.getElementById('resultsCard').offsetWidth;
+  document.getElementById('resultsCard').classList.add('reveal');
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ----------------------------------------------------------------
+   OPTIMIZER STRATEGIES
+   ---------------------------------------------------------------- */
+function clearSelections() {
+  state.tradelines.forEach(t => { t.selected = false; t.paydownAmount = 0; });
+}
+
+function optimizeForScore() {
+  clearSelections();
+  // Strategy: prioritize highest-utilization revolving cards.
+  // Pay each down to ~9% to maximize threshold crossings.
+  const revolving = state.tradelines
+    .filter(t => t.type === 'revolving' && t.limit > 0)
+    .sort((a,b) => (b.balance/b.limit) - (a.balance/a.limit));
+
+  revolving.forEach(t => {
+    const targetBal = Math.floor(t.limit * 0.09);
+    const paydown = Math.max(0, t.balance - targetBal);
+    if (paydown > 0) {
+      t.selected = true;
+      t.paydownAmount = paydown;
+    }
+  });
+
+  // Add medical collections (often quick wins for underwriting + sometimes score)
+  state.tradelines.filter(t => t.type === 'collection' && t.medical).forEach(t => {
+    t.selected = true;
+    t.paydownAmount = t.balance;
+  });
+
+  renderDebtTable();
+  runScenario('Optimize for Score');
+}
+
+function optimizeForMonthlyPayment() {
+  clearSelections();
+  // Strategy: pay off accounts with highest payment-to-balance ratio first.
+  // These deliver biggest DTI relief per dollar.
+  const ranked = state.tradelines
+    .filter(t => t.payment > 0 && t.balance > 0)
+    .map(t => ({ ...t, ratio: t.payment / t.balance }))
+    .sort((a,b) => b.ratio - a.ratio);
+
+  // Pick top 3 by ratio
+  ranked.slice(0, 3).forEach(t => {
+    const orig = state.tradelines.find(x => x.id === t.id);
+    orig.selected = true;
+    orig.paydownAmount = orig.balance;
+  });
+
+  renderDebtTable();
+  runScenario('Optimize for Monthly Payment');
+}
+
+function optimizeForCashNeeded() {
+  clearSelections();
+  // Strategy: smallest cash outlay for biggest qualitative benefit.
+  // Pay off the smallest-balance collections and smallest revolving balances.
+  const collections = state.tradelines
+    .filter(t => t.type === 'collection')
+    .sort((a,b) => a.balance - b.balance);
+
+  const smallRevolving = state.tradelines
+    .filter(t => t.type === 'revolving' && t.limit > 0 && (t.balance/t.limit) >= 0.5)
+    .sort((a,b) => a.balance - b.balance)
+    .slice(0, 2);
+
+  [...collections, ...smallRevolving].forEach(t => {
+    t.selected = true;
+    t.paydownAmount = t.balance;
+  });
+
+  renderDebtTable();
+  runScenario('Optimize for Cash Needed');
+}
+
+function mortgageReadinessPlan() {
+  clearSelections();
+  // Strategy: balanced plan — drop aggregate util under 30%,
+  // eliminate at least one installment payment, address collections.
+  const util = calculateUtilization(state.tradelines);
+
+  // Drop high-util cards to 29%
+  state.tradelines
+    .filter(t => t.type === 'revolving' && t.limit > 0 && (t.balance/t.limit) >= 0.5)
+    .forEach(t => {
+      const targetBal = Math.floor(t.limit * 0.29);
+      const paydown = Math.max(0, t.balance - targetBal);
+      if (paydown > 0) {
+        t.selected = true;
+        t.paydownAmount = paydown;
+      }
+    });
+
+  // Pay off collections
+  state.tradelines.filter(t => t.type === 'collection').forEach(t => {
+    t.selected = true;
+    t.paydownAmount = t.balance;
+  });
+
+  // Smallest installment payoff if under $5k
+  const smallInstall = state.tradelines
+    .filter(t => (t.type === 'installment' || t.type === 'auto' || t.type === 'student') && t.balance > 0 && t.balance < 5000)
+    .sort((a,b) => a.balance - b.balance)[0];
+  if (smallInstall) {
+    smallInstall.selected = true;
+    smallInstall.paydownAmount = smallInstall.balance;
+  }
+
+  renderDebtTable();
+  runScenario('Mortgage Readiness Plan');
+}
+
+/* ----------------------------------------------------------------
+   BORROWER EXPLANATION (plain English)
+   ---------------------------------------------------------------- */
+function generateBorrowerExplanation(r) {
+  const parts = [];
+  if (r.cashNeeded > 0) {
+    parts.push(`If you pay down about ${fmt(r.cashNeeded)} across ${r.accountsImproved} account${r.accountsImproved>1?'s':''}, you'd lower the share of available credit you're using from ${pct(r.utilBefore.aggregate)} to ${pct(r.utilAfter.aggregate)}.`);
+  }
+  if (r.monthlyReduced > 0) {
+    parts.push(`That would also remove about ${fmt(r.monthlyReduced)} of monthly payments from your debt-to-income calculation, which often matters more for mortgage qualification than the score change itself.`);
+  }
+  if (r.crossings.length) {
+    parts.push(`Several accounts would cross meaningful utilization thresholds, which is where most of the directional score improvement comes from.`);
+  }
+  parts.push(`Based on conservative bands, your score could move roughly +${r.lowImpact} to +${r.highImpact} points after the bureaus reflect these changes, typically within one to two statement cycles. This is an educational estimate, not a guarantee. Actual results depend on the scoring model, the bureau, and your full credit profile.`);
+  return parts.join(' ');
+}
+
+/* ----------------------------------------------------------------
+   MAINTENANCE PLAN
+   ---------------------------------------------------------------- */
+function generateBorrowerPlan() {
+  return [
+    { title: 'Pay every bill on time, every cycle', body: 'Payment history is the single largest factor in most credit scoring models. One missed payment can have an outsized impact.' },
+    { title: 'Keep revolving balances low', body: 'Aim for revolving utilization under 30% overall, and under 10% on individual cards when possible. Reporting timing matters: pay before the statement closes.' },
+    { title: 'Avoid opening new accounts before closing', body: 'New credit applications create inquiries and reduce average account age. Hold off on new cards, auto loans, or store accounts until after the mortgage closes.' },
+    { title: 'Do not run up balances after credit is pulled', body: 'Lenders often re-pull credit before closing. Increased balances or new debt can derail approval or pricing.' },
+    { title: 'Monitor your credit reports regularly', body: 'Pull free reports at AnnualCreditReport.com. Reviewing your own report does not affect your score.' },
+    { title: 'Review for errors and address inaccurate items', body: 'If you spot something incorrect, the CFPB and FTC have free guidance on how to dispute it through official channels.' },
+    { title: 'Keep old positive accounts open when appropriate', body: 'Length of credit history matters. Closing a long-standing card can shorten your history and reduce available credit.' },
+    { title: 'Talk to a qualified professional when in doubt', body: 'For complex situations, work with a nonprofit credit counselor or financial professional rather than a credit-repair company.' },
+  ];
+}
+
+function renderMaintenancePlan() {
+  const plan = generateBorrowerPlan();
+  document.getElementById('planGrid').innerHTML = plan.map((p, i) => `
+    <div class="plan-item">
+      <div class="num">${i+1}</div>
+      <div>
+        <h5>${p.title}</h5>
+        <p>${p.body}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ----------------------------------------------------------------
+   INIT
+   ----------------------------------------------------------------
+   On load:
+   1. Capture API key from URL (?key=...) if present.
+   2. Set dropzone state based on whether a key is configured.
+   3. Restore previous session from localStorage if present.
+   ---------------------------------------------------------------- */
+function init() {
+  // 1. If admin opened the site with ?key=sk-ant-... capture it,
+  //    save to localStorage, and strip from URL.
+  const captured = captureKeyFromUrl();
+  if (captured) {
+    // Brief confirmation
+    setTimeout(() => {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:80px;right:24px;background:var(--green);color:#fff;padding:12px 18px;border-radius:6px;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;';
+      banner.textContent = '✓ API key saved to this device';
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 4000);
+    }, 100);
+  }
+
+  // 2. Set dropzone idle UI based on key configuration
+  refreshDropzoneState();
+
+  // 3. Restore previous session if present
+  const saved = loadSavedState();
+  if (saved && saved.borrower && saved.tradelines && saved.tradelines.length) {
+    state.borrower = saved.borrower;
+    state.tradelines = saved.tradelines.map(t => ({ ...t, selected: false, paydownAmount: 0 }));
+    state.inquiries = saved.inquiries || [];
+    renderBorrower();
+    renderDebtTable();
+    renderExecutiveSummary();
+    renderMaintenancePlan();
+    ['borrowerCard','execCard','debtCard','scenarioBar','planCard','settingsCard']
+      .forEach(id => document.getElementById(id).style.display = '');
+  }
+  updateStoragePill();
+}
+
+init();
+</script>
+
+</body>
+</html>
